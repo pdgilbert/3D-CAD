@@ -19,8 +19,8 @@ DR = FreeCAD.Vector(0,0,1)  # default direction specifying parts
 
 #####  parameters
 
-solarPocketLength     = 110.5  # 110.0 + 0.5mm tolerance gap
-solarPocketWidth      =  69.5  #  69.0 + 0.5mm
+solarPocketLength     = 111.0  # 110.0 + 1mm tolerance gap (0.5 was a bit tight)
+solarPocketWidth      =  70.0  #  69.0 + 1mm
 solarPocketInset      =   2.0  # depth of inset to hold solar panel
 solarPerimeterWrap    =   3.5  # Extension of wall beyond solar panel edge.
                                # This affects boxWidth and boxLength and then with
@@ -112,16 +112,17 @@ extraFillHeight = batteryBoxOutsideHeight
 # The socket allows 5 wires, 5v, d-, d+, id, grd . Only using 5v and grd so far.
 
 # note USBhole is rotated 180 so placement base will be furthest corner from origin
-USBholeORIGIN     = FreeCAD.Vector( boxLength, 
-                                    boxWidth - wallThickness - 1.0, 
-                                    bottomThickness + 3.0)
-USBholeLength     = 14.0
+USBholeLength     = 18.0   # 14.0 if using wire hole
 USBholeWidth      =  4.75  # 4.5x9.0 is too small.   5.0x9.5 is loose.
 USBholeHeight     =  9.25
 USBholeFillet     =  1.0
-USBwireHoleLength =  batteryBoxOutsideWidth  + 5.0 # can be longer than needed
-USBwireHoleWidth  =  2.0
-USBwireHoleHeight =  4.0
+#USBwireHoleLength =  batteryBoxOutsideWidth  + 5.0 # can be longer than needed
+#USBwireHoleWidth  =  2.0
+#USBwireHoleHeight =  4.0
+
+USBholeORIGIN     = FreeCAD.Vector( boxLength - 5.0, 
+                                    boxWidth - wallThickness - USBholeWidth - 0.5, 
+                                    - USBholeFillet)
 
 
 #######################################
@@ -336,23 +337,23 @@ USBhole = Part.makeBox(USBholeLength + USBholeFillet, USBholeWidth, USBholeHeigh
 # FILLET EDGES
 USBhole = USBhole.makeFillet(USBholeFillet, USBhole.Edges)
 
-# add wire hole
-USBhole = USBhole.fuse([
-             Part.makeBox(USBwireHoleLength, USBwireHoleWidth, USBwireHoleHeight, 
-               ORIGIN + FreeCAD.Vector(0, USBholeWidth / 3.0, USBholeHeight / 4.0), 
-               DR)])
+## add wire hole
+#USBhole = USBhole.fuse([
+#             Part.makeBox(USBwireHoleLength, USBwireHoleWidth, USBwireHoleHeight, 
+#               ORIGIN + FreeCAD.Vector(0, USBholeWidth / 3.0, USBholeHeight / 4.0), 
+#               DR)])
  
 
 # Part.show(USBhole)
 
 ############ rotate and translate to position
   
-USBhole.rotate(ORIGIN,                   # center of rotation
-                   FreeCAD.Vector(0, 0, 1), # axis   of rotation
-		   180.0)                    # angle  of rotation
+USBhole.rotate(ORIGIN,                  # center of rotation
+               FreeCAD.Vector(0, 1, 0), # axis   of rotation
+	       -90.0)                    # angle  of rotation
 
 # note rotation does not change corner which determines Placement.Base
-USBhole.translate(USBholeORIGIN -  USBhole.Placement.Base + FreeCAD.Vector(USBholeFillet,0,0))
+USBhole.translate(USBholeORIGIN -  USBhole.Placement.Base)
 
 # Part.show(USBhole)
 
