@@ -56,7 +56,7 @@ batteryLength = 50.0
 batteryWallThickness = 1.0
 batteryBoxWallCut = 3.0
 
-clipSpace      = 2.5       # with battery protection circuit
+clipSpace      = 2.5       # with battery protection circuit, so end clips with spring are not used.
 #clipSpace     = 8.0       # 8.0 for simple clips with a spring, both ends =6+2
 #clipThickness  = 1.0       # frame space to hold clip (2.0 too big, too small closes when printing)
 #clipProp       = 2.5 - 0.5 # lift clip so it centers on battery, less tolerance
@@ -111,17 +111,28 @@ extraFillHeight = batteryBoxOutsideHeight
 # This is sized for a micro usb socket which has a rectangular plastic sheath it fits into.
 # The socket allows 5 wires, 5v, d-, d+, id, grd . Only using 5v and grd so far.
 
-# note USBhole is rotated 180 so placement base will be furthest corner from origin
+# A horizontal USBhole is rotated 180 so placement base will be furthest corner from origin
+# A vertical USBhole is rotated 90 about a different axis.
+
+# The plastic sheath outside is 9.0 x 4.4. Swelling or calibration is 
+# different in Z vs XxY on my printer. 
+# 4.75x9.25 works well with a horizontal hole (4.5x9.0 is too small and 5.0x9.5 is loose)
+# but is too small (prints 4.1x8.5) with a vertical hole.
+# With the vertical hole there is some swelling on the first layer that can make the hole
+# too small. There should be a camfer, but scapin away the small lip also works.
+# Making the hole bigger means the insert is loose once inserted.
+
+# Length, Width, Height were directions with vertical hole.
 USBholeLength     = 18.0   # 14.0 if using wire hole
-USBholeWidth      =  4.75  # 4.5x9.0 is too small.   5.0x9.5 is loose.
-USBholeHeight     =  9.25
+USBholeWidth      =  5.1  
+USBholeHeight     = 10.0   # 9.75  very slightly too small
 USBholeFillet     =  1.0
 #USBwireHoleLength =  batteryBoxOutsideWidth  + 5.0 # can be longer than needed
 #USBwireHoleWidth  =  2.0
 #USBwireHoleHeight =  4.0
 
 USBholeORIGIN     = FreeCAD.Vector( boxLength - 5.0, 
-                                    boxWidth - wallThickness - USBholeWidth - 0.5, 
+                                    boxWidth - wallThickness - USBholeWidth - 0.75, 
                                     - USBholeFillet)
 
 
@@ -385,20 +396,26 @@ boxSlice = box.cut(Part.makeBox(
 #####  Mesh
 #######################################
 
-# Print boxSlice or box.  Change in mesh.Mesh and Mesh.export below.
+# export stl for boxSlice and box.
 
 docName = 'box'
 doc = FreeCAD.newDocument(docName) 
 App.setActiveDocument(docName)
 
-mesh = doc.addObject("Mesh::Feature","Mesh")
-mesh.Mesh = MeshPart.meshFromShape(Shape=boxSlice, 
-	   LinearDeflection=0.1, AngularDeflection=0.523599, Relative=False)
-#mesh.Mesh = MeshPart.meshFromShape(Shape=box, 
-#	   LinearDeflection=0.1, AngularDeflection=0.523599, Relative=False)
 
-mesh.Label= "box  (Meshed)"
-mesh.ViewObject.CreaseAngle=25.0
-Mesh.export([mesh], "./" + "slice_solar_breadboard_box.stl")
-#Mesh.export([mesh], "./" + "solar_breadboard_box.stl")
+meshSlice = doc.addObject("Mesh::Feature","Mesh")
+meshSlice.Mesh = MeshPart.meshFromShape(Shape=boxSlice, 
+	   LinearDeflection=0.1, AngularDeflection=0.523599, Relative=False)
+
+meshSlice.Label= "boxSlice  (Meshed)"
+meshSlice.ViewObject.CreaseAngle=25.0
+Mesh.export([meshSlice], "./" + "slice_solar_breadboard_box.stl")
+
+
+meshBox = doc.addObject("Mesh::Feature","MeshBox")
+meshBox.Mesh = MeshPart.meshFromShape(Shape=box, 
+	   LinearDeflection=0.1, AngularDeflection=0.523599, Relative=False)
+meshBox.Label= "box  (Meshed)"
+meshBox.ViewObject.CreaseAngle=25.0
+Mesh.export([meshBox], "./" + "solar_breadboard_box.stl")
 
